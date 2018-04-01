@@ -138,28 +138,27 @@ def init_campaign_with_data(encoded_secret, address, campaign_name, campaign_inf
 	make_transaction(1, address, TOP_SECRET, campaign_date)
 
 def get_balance_from_address(address):
-	return int(arky.rest.GET.api.accounts.getBalance(address=address)['balance'])
+	balance = arky.rest.GET.api.accounts.getBalance(address=address)['balance']
+	return balance
 
 def get_balance_from_public_key(public_key):
 	address = arky.core.crypto.getAddress(public_key)
-	get_balance_from_address(address)
+	return get_balance_from_address(address)
 
 
 def get_balance(secret):
 	keys = arky.core.crypto.getKeys(secret)
 	public_key = keys['publicKey']
-	get_balance_from_public_key(public_key)
+	return get_balance_from_public_key(public_key)
 
 
 def get_investors(secret):
 	#get all people who sent money to this address
-	use_transaction_ledger()
 	keys = arky.core.crypto.getKeys(secret)
 	public_key = keys['publicKey']
 	address = arky.core.crypto.getAddress(public_key)
 	transactions = arky.rest.GET.api.transactions(recipientId=address)['transactions']
 	address_value_pair_list = []
-	use_permission_ledger()
 	for tnx in transactions:
 		address_value_pair_list.append((tnx['senderId'],tnx['amount']))
 	return address_value_pair_list
@@ -237,20 +236,25 @@ def campaign(request):
 	encoded_secret = request.GET['campaign_id']
 	context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
 	secret = decode(ARK_FUND_SECRET, encoded_secret)
+	use_transaction_ledger()
 	context_dictionary['funding_completed'] = get_balance(secret)
 	investor_list = get_investors(secret)
 	context_dictionary['investors'] = investor_list
-	# print(context_dictionary)
-	# context_dictionary['per'] = (int(str(context_dictionary['funding_completed']))*100) // int(str(context_dictionary['goal']))
+	use_transaction_ledger()
+	context_dictionary['per'] = (int(str(context_dictionary['funding_completed']))*100) // int(str(context_dictionary['goal']))
+	print(context_dictionary)
 	return render(request, 'campaign.html', context_dictionary)
 
-
+@csrf_exempt
 def fund(request):
 	# Switch to transaction ledger
 	use_transaction_ledger()
 	secret = request.POST['secret'].strip()
 	amount = request.POST['amount'].strip()
-	recipient = request.POST['recipient'].strip()
+	encoded_secret = request.POST['encoded_secret'].strip()
+	keys = arky.core.crypto.getKeys(encoded_secret)
+	public_key = keys['publicKey']
+	recipient = arky.core.crypto.getAddress(public_key)
 	make_transaction(amount, recipient, secret, "Transaction")
 	use_permission_ledger()
 	context_dictionary = {}
