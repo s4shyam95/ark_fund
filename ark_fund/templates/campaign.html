@@ -12,6 +12,7 @@
                     <form class="login100-form validate-form" method="post" action="/fund/" name="fund_campaign_form"> <!-- CHECK -->
                         <div class="wrap-input100 validate-input" data-validate = "Amount">
                         <input class="crcamp100" type="text" name="amount" placeholder="Amount">
+                        {% csrf_token %} 
                         </div>
                         <div class="wrap-input100 validate-input" data-validate="Enter password">
                             <input class="input100" type="password" name="secret" placeholder="Your Secret Key">
