@@ -19,8 +19,3 @@ Though we have worked with blockchain before, this was our first time with Ark, 
 
 ## What’s next for ArkFund
 We will have much much more flexibility once the Ark team is out with their VMs on nodes, allowing us to deploy smart contracts, removing further elements of trust and making the crowd-funding experience even more smooth.
-Message Input
-
-Message Shyam, ankush
-
-*bold* _italics_ ~strike~ `code` ```preformatted``` >quote
