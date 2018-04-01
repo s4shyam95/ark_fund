@@ -8,6 +8,25 @@
                         Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
                         Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
                 </p>
+                <br>
+                <hr>
+                <form class="login100-form validate-form" method="post" action="/fund/" name="fund_campaign_form"> <!-- CHECK -->
+                        <div class="wrap-input100 validate-input" data-validate = "Amount">
+                        <input class="crcamp100" type="text" name="amount" placeholder="Amount">
+                        </div>
+                        <div class="wrap-input100 validate-input" data-validate="Enter password">
+                            <input class="input100" type="password" name="secret" placeholder="Your Secret Key">
+                            <span class="focus-input100" data-placeholder="&#xf191;"></span>
+                        </div>                        
+                        <input class="crcamp100" type="hidden" name="encoded_secret" placeholder="date" value="{{ vendorField }}"></hidden>
+                    <div class="container-login100-form-btn">
+                        <button class="login100-form-btn" type="submit" name="submit" id="submit">
+                            Fund
+                        </button>
+                    </div>
+           
+             </form>
+
         </div>
         <div class="col-5">
             <div class="progress ">
