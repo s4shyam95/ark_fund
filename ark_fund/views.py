@@ -117,11 +117,15 @@ def get_all_campaigns():
 			continue
 		campaign_set.add(campaign_address)
 		if "vendorField" in txn and re.search('[a-zA-Z]', txn['vendorField']):
-			#print(txn)
 			dict_to_be_appended = get_dictionary_for_encoded_secret(txn['vendorField'])
-			dict_to_be_appended['description'] = dict_to_be_appended['description'][:256]
+			print(dict_to_be_appended)
 			all_campaigns.append(dict_to_be_appended)
-	return all_campaigns[7:]
+	skip_entries = 7
+	for i in range(len(all_campaigns)):
+		if "description" in all_campaigns[i]:
+			all_campaigns[i]['description'] = all_campaigns[i]['description'][:256]+" ... "
+
+	return all_campaigns[skip_entries:]
 
 # def seed_campaign(address):
 # 	make_transaction(100000000, address, TOP_SECRET, "SEED")
