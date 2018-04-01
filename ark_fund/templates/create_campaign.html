@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block main_block %}
+<div class="wrap-login100">
+		<form class="login100-form validate-form" method="post" action="/create_campaign/" name="create_campaign_form"> <!-- CHECK -->
+			{% csrf_token %}
+			<span class="login100-form-title p-b-34 p-t-27">
+				Start Your Campaign
+			</span>
+ 				<div class="wrap-input100 validate-input" data-validate = "Enter Campaign Name">
+				<input class="crcamp100" type="text" name="campaign_name" placeholder="Campaign Name">
+				</div>
+ 				<div class="wrap-input100 validate-input" data-validate = "Campaign Description">
+				<textarea rows="10" cols="50" class="crcamp100" style="height:120px;" name="campaign_info" placeholder="Campaign Description"></textarea>
+				</div>
+
+ 				<div class="wrap-input100 validate-input" data-validate = "Goal">
+				<input class="crcamp100" type="text" name="campaign_goal" placeholder="Goal">
+				</div>
+				<input class="crcamp100" type="hidden" name="campaign_date" placeholder="date" value="20180315000000"></hidden>
+			<div class="container-login100-form-btn">
+				<button class="login100-form-btn" type="submit" name="submit" id="submit">
+					Create
+				</button>
+			</div>
+	</form>
+	</div>
+{% endblock main_block %}
