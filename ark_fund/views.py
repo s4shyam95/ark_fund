@@ -232,7 +232,7 @@ def create_campaign(request):
 			context_dictionary = {}
 			# context_dictionary['encoded_secret'] = encoded_secret
 			insert_key_value_pair(encoded_secret, campaign_name, campaign_info, campaign_goal, campaign_date)
-			context_dict = get_dictionary_for_encoded_secret(encoded_secret)
+			context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
 			return redirect('/campaign/?campaign_id='+encoded_secret)
 			# return render(request, 'campaign.html', context_dictionary)
 	else:
@@ -279,9 +279,69 @@ def fund(request):
 
 
 def account(request):
+	if request.method == "POST" or request.session.get('logged_in',False) == False:
+		return redirect('/login/')
+	use_transaction_ledger()
 	context_dictionary = {}
+	#get public_key, address from session as request.session.public_key and request.session.address
+	transaction_list = get_all_transactions_with_sender(request.session['address'])
+	balance = get_balance_from_address(request.session['address'])
+	context_dictionary['balance'] = (float(balance)/10**8)
+	spent = 0.0
+	transactions = []
+	for txn in transaction_list:
+		spent += float(txn['amount'])
+		txn_dict = {}
+		txn_dict['amount'] = "%.4f" % (txn['amount']/10**8)
+		txn_dict['recipientId'] = txn['recipientId']
+		transactions.append(txn_dict)
+	context_dictionary['transactions'] = transactions
+	context_dictionary['spent'] =float(spent)/10**8
+	context_dictionary['per'] = (context_dictionary['spent']/(float(context_dictionary['spent']) + float(context_dictionary['balance'])))
+	context_dictionary['spent'] = "%.4f" % context_dictionary['spent']
+	context_dictionary['per'] = "%.4f" % context_dictionary['per']
+	context_dictionary['balance'] = "%.4f" % context_dictionary['balance']
+	#print(context_dictionary)
+	use_permission_ledger()
 	return render(request, 'account.html', context_dictionary)
 
+# end
+
+
+# Token Management
+
+def mature_campaigns(encoded_secret):
+	if check_maturity(encoded_secret) > 0:
+		release_tokens()
+		release_key()
+		return True
+	elif check_maturity(encoded_secret) < 0:
+		revert_funds()
+		return True
+	else:
+		return False
+
+
+def release_key(encoded_secret, owner_public_key):
+	secret = decode(ARK_FUND_SECRET, encoded_secret)
+	encrypted_secret = ellipical_curve_encrypt(secret, owner_public_key)
+	make_transaction(1, ARK_FUND_CAMPAIGN_INIT_ADDR, secret, encoded_secret)
+	
+
+def release_tokens(encoded_secret):
+	#release token from campaign_id to users in transaction
+	investors = get_investors(encoded_secret)
+	use_permission_ledger()
+	for investor in investors:
+		make_transaction(investor[1], investors[0], secret, "token")
+	
+
+
+def revert_funds():
+	investors = get_investors(encoded_secret)
+	use_transaction_ledger()
+	for investor in investors:
+		make_transaction(investor[1], investors[0], secret, "refund")
 
 # end
 
