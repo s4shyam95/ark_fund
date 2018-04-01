@@ -1,0 +1,43 @@
+{% extends "template.html" %}
+
+{% block nav_block %}
+<nav class="navbar navbar-expand-lg navbar-dark navcontainer">
+        <div class="row align-items-center" style="width: 100%">
+            <div class="col-3">
+                <a class="navbar-bran" href="#"><img style="max-width: 50px;" src='https://ark.io/images/ark-logo.png' /></a>
+                <ul class="navbar-nav mr-auto">
+                    <span class="navbar-text">
+                            MWqia1y68vT1oSrRSBC6zEftGRsU29zi3P
+                        {{ request.SESSION.public_key}}
+                    </span>
+                </ul>
+            </div>
+            <div class="col-6">
+    
+                <form class="form-inline my-0 my-lg-0 mr-auto">
+                    <div class="wrap-input100 validate-input" data-validate="Search field" style="margin-bottom:10px">
+                        <input class="input100" type="text" name="secret" placeholder="Search">
+                        <span class="focus-input100"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="col-3">
+                <ul class="navbar-nav float-right">
+                    {% if request.SESSION.logged_in %}
+                    <li>
+                        <a class="nav-link" href="/start_campaign/">Start Campaign</a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="/logout/">Logout</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a class="nav-link" href="/login/">Login</a>
+                    </li>
+                    {% endif %}
+    
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock nav_block %}
