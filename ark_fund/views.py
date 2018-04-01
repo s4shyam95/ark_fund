@@ -160,10 +160,13 @@ def get_investors(secret):
 	public_key = keys['publicKey']
 	address = arky.core.crypto.getAddress(public_key)
 	transactions = arky.rest.GET.api.transactions(recipientId=address)['transactions']
-	address_value_pair_list = []
+	address_value_pair_dict = {}
 	for tnx in transactions:
-		address_value_pair_list.append((tnx['senderId'],tnx['amount']/10**8))
-	return address_value_pair_list
+		if tnx['senderId'] in address_value_pair_dict:
+			address_value_pair_dict[tnx['senderId']] += tnx['amount']/10**8
+		else:
+			address_value_pair_dict[tnx['senderId']] = tnx['amount']/10**8
+	return address_value_pair_dict
 	
 
 # end
@@ -243,8 +246,8 @@ def campaign(request):
 	# print(secret)
 	use_transaction_ledger()
 	context_dictionary['funding_completed'] = str(int(get_balance(secret))/10**8)
-	investor_list = get_investors(secret)
-	context_dictionary['investors'] = investor_list
+	investor_dict = get_investors(secret)
+	context_dictionary['investors'] = investor_dict
 	use_permission_ledger()
 	context_dictionary['per'] = ((float(str(context_dictionary['funding_completed']))*100) / (float(str(context_dictionary['goal']))))
 	# print(context_dictionary)
