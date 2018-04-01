@@ -166,6 +166,9 @@ def get_investors(secret):
 			address_value_pair_dict[tnx['senderId']] += tnx['amount']/10**8
 		else:
 			address_value_pair_dict[tnx['senderId']] = tnx['amount']/10**8
+
+	for key in address_value_pair_dict.keys():
+		address_value_pair_dict[key] = "%.4f" % address_value_pair_dict[key]
 	return address_value_pair_dict
 	
 
