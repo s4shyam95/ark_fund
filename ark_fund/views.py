@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http.response import HttpResponse
 import arky.rest
+import requests
 
 ARK_FUND_SECRET = "not_much_of_a_secret_is_it_now"
 ARK_FUND_CAMPAIGN_INIT_ADDR = "DNGWfoHyhYfmeJNqSPk2xb7BRm1btxyGaP" #Gets updated below.
@@ -51,18 +52,20 @@ print(ARK_FUND_CAMPAIGN_INIT_ADDR)
 
 
 # Connecting with PostGres for quick query
+# Connecting with PostGres for quick query
+
 def get_dictionary_for_encoded_secret(encoded_secret):
-	#ankush connects to his server here, 
-	#queries the key, 
-	#gets the value, 
-	#parses it into a dictionary
-	return {}
+    resp = requests.get('http://13.93.225.109:8857/get_campaign?key=%s' %(encoded_secret)).json()
+    return resp
 
 def insert_key_value_pair(encoded_secret, campaign_name, campaign_info, campaign_goal, campaign_date):
-
-
-
-	return True #or False if it fails for some reason
+    resp = requests.post('http://13.93.225.109:8857/create_campaign', data={"key": encoded_secret,"name": campaign_name, "description": campaign_info, "goal": campaign_goal})
+    if resp.content=='success':
+        return True
+    else:
+        return False
+# print get_dictionary_for_encoded_secret('test')
+# print insert_key_value_pair('test4', 'test4', 'test4', 100, '20180401000748')
 #end
 
 
@@ -84,7 +87,7 @@ def make_transaction(amount, recipientId, secret, vendorField):
 	arky.core.sendToken(amount=amount, recipientId=recipientId,secret=secret, vendorField=vendorField)
 
 
-def get_all_campaigns(request):
+def get_all_campaigns():
 	all_campaigns = []
 	transactions = arky.rest.GET.api.transactions(senderId=ARK_FUND_CAMPAIGN_INIT_ADDR)['transactions']
 	campaign_set = set()
@@ -92,8 +95,9 @@ def get_all_campaigns(request):
 		campaign_address = txn['recipientId']
 		if campaign_address in campaign_set:
 			continue
-		set.add(campaign_address)
-		all_campaigns.append(get_dictionary_for_encoded_secret(txn['vendorField']))
+		campaign_set.add(campaign_address)
+		if "vendorField" in txn:
+			all_campaigns.append(get_dictionary_for_encoded_secret(txn['vendorField']))
 	return all_campaigns
 
 # def seed_campaign(address):
