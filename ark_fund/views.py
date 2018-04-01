@@ -279,7 +279,22 @@ def fund(request):
 
 
 def account(request):
+	if request.method == "POST" or request.session.get('logged_in',False) == False:
+		return redirect('/login/')
+	use_transaction_ledger()
 	context_dictionary = {}
+	#get public_key, address from session as request.session.public_key and request.session.address
+	transaction_list = get_all_transactions_with_sender(request.session['address'])
+	context_dictionary['transactions'] = transaction_list
+	balance = get_balance_from_address(request.session['address'])
+	context_dictionary['balance'] = float(balance)/10**8
+	spent = 0.0
+	for txn in transaction_list:
+		spent += int(txn['amount'])
+	context_dict['spent'] = float(spent)/10**8
+	context_dict['per'] = context_dict['spent']/(context_dict['spent'] + context_dictionary['balance'])
+	print(context_dict)
+	use_permission_ledger()
 	return render(request, 'account.html', context_dictionary)
 
 
