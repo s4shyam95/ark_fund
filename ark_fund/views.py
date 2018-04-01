@@ -232,7 +232,7 @@ def create_campaign(request):
 			context_dictionary = {}
 			# context_dictionary['encoded_secret'] = encoded_secret
 			insert_key_value_pair(encoded_secret, campaign_name, campaign_info, campaign_goal, campaign_date)
-			context_dict = get_dictionary_for_encoded_secret(encoded_secret)
+			context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
 			return redirect('/campaign/?campaign_id='+encoded_secret)
 			# return render(request, 'campaign.html', context_dictionary)
 	else:
@@ -291,9 +291,9 @@ def account(request):
 	spent = 0.0
 	for txn in transaction_list:
 		spent += int(txn['amount'])
-	context_dict['spent'] = float(spent)/10**8
-	context_dict['per'] = context_dict['spent']/(context_dict['spent'] + context_dictionary['balance'])
-	print(context_dict)
+	context_dictionary['spent'] = float(spent)/10**8
+	context_dictionary['per'] = context_dictionary['spent']/(context_dictionary['spent'] + context_dictionary['balance'])
+	print(context_dictionary)
 	use_permission_ledger()
 	return render(request, 'account.html', context_dictionary)
 
