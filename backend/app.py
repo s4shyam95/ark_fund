@@ -21,7 +21,7 @@ class App(object):
         if len(rows)==0:
             return {}
 	row = rows[0]        
-        return {"vendorField": row[0],"name": row[1],"description": row[2],"goal": row[3],"created_on": row[4].strftime('%Y%m%d%H%M%S')}
+        return {"vendorField": row[0],"name": row[1],"description": row[2],"goal": row[3],"created_on": row[4].strftime('%m-%d-%Y %H:%M:%S')}
 
 
     @cherrypy.tools.allow(methods=['POST','GET'])
