@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block main_block %}
+<div class="wrap-listing100">
+    <div class="row">
+
+        <div class="col-6">
+            <div class="balance">
+<!--                 <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ per }}" style="width: {{ per }}%; color:#ef192d" aria-valuemin="0" aria-valuemax="100"></div> -->
+                Balance: {{ balance }} ARK
+            </div>
+            <br>
+            <h5 class="top-10 bottom-line bottom-10">Transactions<span class="badge badge-light pull-right">{{ transactions|length }}</span></h5>
+            <div class="backer" style="margin-left: -30px;">
+            <table class="table table-bordered">
+                <tr>
+                    <th><span><center>Recipient</center></span></th>
+                    <th><span>Amount</span></th>
+                </tr>
+            {% for txn in transactions %}
+                <tr>
+                    <td>
+                        <span>{{ txn.recipientId }}</span>
+                    </td>
+                    <td>
+                        <span class="white text-right">{{ txn.amount }}</span>
+                    </td>
+                </tr>
+            
+            {% endfor %}
+            </table>
+            </div>            
+        </div>
+        <div class="col-6 side-line">
+                <h2 class="bottom-line make-far">My Account</h2>
+
+                <p style="font-weight:800;">Address: <br>{{ request.session.address }}</p>
+                <hr>
+                <p style="word-wrap: break-word;">Public Key: {{ request.session.public_key }}</p>
+                <hr>
+                <p>Amount spent: {{ spent }} ARK</p>
+                <hr>
+                <p>Balance: {{ balance }} ARK</p>
+
+        </div>        
+    </div>
+    
+    
+
+</div>
+{% endblock main_block %}
+
