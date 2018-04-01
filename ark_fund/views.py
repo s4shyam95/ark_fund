@@ -292,13 +292,13 @@ def account(request):
 	for txn in transaction_list:
 		spent += int(txn['amount'])
 		txn_dict = {}
-		txn_dict['amount'] = txn['amount']
+		txn_dict['amount'] = txn['amount']/10**8
 		txn_dict['recipientId'] = txn['recipientId']
 		transactions.append(txn_dict)
 	context_dictionary['transactions'] = transactions
 	context_dictionary['spent'] = float(spent)/10**8
 	context_dictionary['per'] = context_dictionary['spent']/(context_dictionary['spent'] + context_dictionary['balance'])
-	print(context_dictionary)
+	#print(context_dictionary)
 	use_permission_ledger()
 	return render(request, 'account.html', context_dictionary)
 
