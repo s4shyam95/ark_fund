@@ -3,9 +3,11 @@ from django.http.response import HttpResponse
 import arky.rest
 
 ARK_FUND_SECRET = "not_much_of_a_secret_is_it_now"
-ARK_FUND_CAMPAIGN_INIT_ADDR = "DNGWfoHyhYfmeJNqSPk2xb7BRm1btxyGaP"
+ARK_FUND_CAMPAIGN_INIT_ADDR = "DNGWfoHyhYfmeJNqSPk2xb7BRm1btxyGaP" #Gets updated below.
+TOP_SECRET = "help"
 
-# Begin code for encoding secret
+
+# Begin code for encoding with keys (AES is slower but better for this)
 import base64
 def encode(key, clear):
     enc = []
@@ -29,18 +31,120 @@ def decode(key, enc):
 
 # Switch between different .net configurations for the remote ledgers
 def use_permission_ledger():
-	arky.rest.use("ark1")
+	arky.rest.use("ark1") # 109
 
 def use_transaction_ledger():
 	arky.rest.use("ark2")
 # end
 
-#Default ledger
+
+
+# Default ledger
 use_permission_ledger()
+keys = arky.core.crypto.getKeys(TOP_SECRET)
+public_key = keys['publicKey']
+address = arky.core.crypto.getAddress(public_key)
+ARK_FUND_CAMPAIGN_INIT_ADDR = address
+print(ARK_FUND_CAMPAIGN_INIT_ADDR)
+# end default setting
+
+
+
+# Connecting with PostGres for quick query
+def get_dictionary_for_encoded_secret(encoded_secret):
+	#ankush connects to his server here, 
+	#queries the key, 
+	#gets the value, 
+	#parses it into a dictionary
+	return {}
+
+def insert_key_value_pair(encoded_secret, campaign_name, campaign_info, campaign_goal, campaign_date):
+
+
+
+	return True #or False if it fails for some reason
+#end
+
+
+
+# BlockChain Helpers
+def get_all_transactions():
+	all_transactions = []
+	offset = 0
+	limit = 50
+	while True:
+		transactions = arky.rest.GET.api.transactions(limit=limit, offset=offset*limit)
+		all_transactions.extend(transactions['transactions'])
+		if transactions['transactions'].size() < limit:
+			break
+		offset+=1
+	return transactions
+
+def make_transaction(amount, recipientId, secret, vendorField):
+	arky.core.sendToken(amount=amount, recipientId=recipientId,secret=secret, vendorField=vendorField)
+
+
+def get_all_campaigns(request):
+	all_campaigns = []
+	transactions = arky.rest.GET.api.transactions(senderId=ARK_FUND_CAMPAIGN_INIT_ADDR)['transactions']
+	campaign_set = set()
+	for txn in transactions:
+		campaign_address = txn['recipientId']
+		if campaign_address in campaign_set:
+			continue
+		set.add(campaign_address)
+		all_campaigns.append(get_dictionary_for_encoded_secret(txn['vendorField']))
+	return all_campaigns
+
+# def seed_campaign(address):
+# 	make_transaction(100000000, address, TOP_SECRET, "SEED")
+
+def init_campaign_with_data(encoded_secret, address, campaign_name, campaign_info, campaign_goal, campaign_date):
+	make_transaction(1, address, TOP_SECRET, encoded_secret)
+	make_transaction(1, address, TOP_SECRET, campaign_name)
+	make_transaction(1, address, TOP_SECRET, campaign_info)
+	make_transaction(1, address, TOP_SECRET, campaign_goal)
+	make_transaction(1, address, TOP_SECRET, campaign_date)
+
+def get_balance_from_address(address):
+	return int(arky.rest.GET.api.accounts.getBalance(address=address)['balance'])
+
+def get_balance_from_public_key(public_key):
+	address = arky.core.crypto.getAddress(public_key)
+	get_balance_from_address(address)
+
+
+def get_balance(secret):
+	keys = arky.core.crypto.getKeys(secret)
+	public_key = keys['publicKey']
+	get_balance_from_public_key(public_key)
+
+
+def get_investors(secret):
+	#get all people who sent money to this address
+	keys = arky.core.crypto.getKeys(secret)
+	public_key = keys['publicKey']
+	address = arky.core.crypto.getAddress(public_key)
+	transactions = arky.rest.GET.api.transactions(recipientId=address)['transactions']
+	address_value_pair_list = []
+	for tnx in transactions:
+		address_value_pair_list.append((tnx['senderId'],tnx['amount']))
+	return address_value_pair_list
+	
+
+# end
+
+
+
+
+
+# Rest Handlers
 
 def home(request):
 	#Fetch all campaigns here, somehow
-    return render(request, 'home.html')
+	context_dictionary = {}
+	context_dictionary['campaigns'] = get_all_campaigns()
+	return render(request, 'home.html', context_dictionary)
 
 def login(request):
 	if request.method == "GET":
@@ -59,53 +163,65 @@ def login(request):
 		request.session['public_key'] = public_key.strip()
 		request.session['privateKey'] = private_key.strip()
 		request.session['address'] = address.strip()
-		return render(request, 'home.html')	
+		return render(request, 'home.html')
+
+
+def logout(request):
+	request.session['logged_in'] = False
+	return render(request, 'login.html')
 
 
 def create_campaign(request):
-	if request.session.get('logged_in',False) == False:
-		return render(request, 'login.html')
+	if request.method == "POST":
+		if request.session.get('logged_in',False) == False:
+			return render(request, 'login.html')
+		else:
+			secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+			keys = arky.core.crypto.getKeys(secret)
+			public_key = keys['publicKey']
+			address = arky.core.crypto.getAddress(public_key)
+			private_key = keys['privateKey']
+			encoded_secret = encode(ARK_FUND_SECRET, secret)
+			campaign_info = request.POST['campaign_name'].trim()
+			campaign_info = request.POST['campaign_info'].trim()
+			campaign_goal = request.POST['campaign_goal'].trim()
+			campaign_date = request.POST['campaign_date'].trim()
+			init_campaign_with_data(encoded_secret, address, campaign_name, campaign_info, campaign_goal, campaign_date)
+			context_dictionary = {}
+			# context_dictionary['encoded_secret'] = encoded_secret
+			insert_key_value_pair(encoded_secret, campaign_name, campaign_info, campaign_goal, campaign_date)
+			context_dict = get_dictionary_for_encoded_secret(encoded_secret)
+			return render(request, 'campaign.html', context_dictionary)
 	else:
-		secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
-		keys = arky.core.crypto.getKeys(secret)
-		public_key = keys['publicKey']
-		address = arky.core.crypto.getAddress(public_key)
-		private_key = keys['privateKey']
-		encoded_secret = encode(ARK_FUND_SECRET, secret)
-		campaign_info = request.POST['campaign_info'].trim()
-		campaign_goal = request.POST['campaign_goal'].trim()
-		campaign_date = request.POST['campaign_date'].trim()
-		make_transaction(1, ARK_FUND_CAMPAIGN_INIT_ADDR, secret, encoded_secret)
-		make_transaction(1, ARK_FUND_CAMPAIGN_INIT_ADDR, secret, campaign_info)
-		make_transaction(1, ARK_FUND_CAMPAIGN_INIT_ADDR, secret, campaign_goal)
-		make_transaction(1, ARK_FUND_CAMPAIGN_INIT_ADDR, secret, campaign_date)
-		return render(request, 'home.html') #CHANGE THIS
-def get_all_campaigns(request):
-	#Campaign Blocks are present in ark1. Each campaign is given its own public
-	pass
+		if request.session.get('logged_in',False) == False:
+			return render(request, 'login.html')
+		else:
+			return render(request, 'create_campaign.html')
 
 
-
-def get_all_blocks():
-	all_transactions = []
-	offset = 0
-	limit = 50
-	while True:
-		transactions = arky.rest.GET.api.transactions(limit=limit, offset=offset*limit)
-		all_transactions.extend(transactions['transactions'])
-		if transactions['transactions'].size() < limit:
-			break
-		offset+=1
-	return transactions
+def campaign(request):
+	encoded_secret = request.GET['campaign_id']
+	context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
+	secret = decode(ARK_FUND_SECRET, encoded_secret)
+	context_dictionary['funding_completed'] = getBalance(secret)
+	investor_list = get_investors(secret)
+	context_dictionary['investors'] = investor_list
+	return render(request, 'campaign.html', context_dictionary)
 
 
+def fund(request):
+	# Switch to transaction ledger
+	use_transaction_ledger()
+	secret = request.POST['secret'].trim()
+	amount = request.POST['amount'].trim()
+	recipient = request.POST['recipient'].trim()
+	make_transaction(amount, recipient, secret, "Transaction")
+	use_permission_ledger()
+	context_dictionary = {}
+	context_dictionary['alert'] = "Funds have successfully been transfered to our escrow"
+	return render(request, 'home.html', context_dictionary)
 
 
-
-def make_transaction(amount, recipientId, secret, vendorField):
-	arky.core.sendToken(amount=amount, recipientId=recipientId,secret=secret, vendorField=vendorField)
-
-
-
+# end
 
 
