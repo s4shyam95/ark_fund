@@ -139,6 +139,8 @@ def init_campaign_with_data(encoded_secret, address, campaign_name, campaign_inf
 
 def get_balance_from_address(address):
 	balance = arky.rest.GET.api.accounts.getBalance(address=address)['balance']
+	# print(address)
+	# print(balance)
 	return balance
 
 def get_balance_from_public_key(public_key):
@@ -209,9 +211,11 @@ def create_campaign(request):
 			return redirect('/login/')
 		else:
 			secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+			# print("secret : "+ secret)
 			keys = arky.core.crypto.getKeys(secret)
 			public_key = keys['publicKey']
 			address = arky.core.crypto.getAddress(public_key)
+			#print("addr:"+address)
 			private_key = keys['privateKey']
 			encoded_secret = encode(ARK_FUND_SECRET, secret)
 			campaign_name = request.POST['campaign_name'].strip()
@@ -236,12 +240,13 @@ def campaign(request):
 	encoded_secret = request.GET['campaign_id']
 	context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
 	secret = decode(ARK_FUND_SECRET, encoded_secret)
+	# print(secret)
 	use_transaction_ledger()
 	context_dictionary['funding_completed'] = get_balance(secret)
 	investor_list = get_investors(secret)
 	context_dictionary['investors'] = investor_list
-	use_transaction_ledger()
-	context_dictionary['per'] = (int(str(context_dictionary['funding_completed']))*100) // int(str(context_dictionary['goal']))
+	use_permission_ledger()
+	context_dictionary['per'] = ((int(str(context_dictionary['funding_completed']))*100) / (int(str(context_dictionary['goal']))*10**8))
 	print(context_dictionary)
 	return render(request, 'campaign.html', context_dictionary)
 
@@ -252,7 +257,8 @@ def fund(request):
 	secret = request.POST['secret'].strip()
 	amount = request.POST['amount'].strip()
 	encoded_secret = request.POST['encoded_secret'].strip()
-	keys = arky.core.crypto.getKeys(encoded_secret)
+	decoded_secret = decode(ARK_FUND_SECRET, encoded_secret)
+	keys = arky.core.crypto.getKeys(decoded_secret)
 	public_key = keys['publicKey']
 	recipient = arky.core.crypto.getAddress(public_key)
 	make_transaction(amount, recipient, secret, "Transaction")
