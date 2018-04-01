@@ -265,6 +265,7 @@ def fund(request):
 	use_transaction_ledger()
 	secret = request.POST['secret'].strip()
 	amount = request.POST['amount'].strip()
+	amount 
 	encoded_secret = request.POST['encoded_secret'].strip()
 	decoded_secret = decode(ARK_FUND_SECRET, encoded_secret)
 	keys = arky.core.crypto.getKeys(decoded_secret)
@@ -277,7 +278,9 @@ def fund(request):
 	return redirect('/?alert=Funds%20have%20successfully%20been%20transfered%20to%20our%20escrow')
 
 
-def account()
+def account(request):
+	context_dictionary = {}
+	return render(request, 'account.html', context_dictionary)
 
 
 # end
