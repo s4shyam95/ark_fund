@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http.response import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 import arky.rest
 import requests
+import random
+import string
 
 ARK_FUND_SECRET = "not_much_of_a_secret_is_it_now"
 ARK_FUND_CAMPAIGN_INIT_ADDR = "DNGWfoHyhYfmeJNqSPk2xb7BRm1btxyGaP" #Gets updated below.
@@ -16,7 +19,7 @@ def encode(key, clear):
         key_c = key[i % len(key)]
         enc_c = chr((ord(clear[i]) + ord(key_c)) % 256)
         enc.append(enc_c)
-    return base64.urlsafe_b64encode("".join(enc))
+    return base64.urlsafe_b64encode(bytes("".join(enc), 'ascii'))
 
 def decode(key, enc):
     dec = []
@@ -153,7 +156,7 @@ def home(request):
 def login(request):
 	if request.method == "GET":
 		if request.session.get('logged_in',False) == True:
-			return render(request, 'home.html')
+			return redirect('/')
 		else:
 			return render(request, 'login.html')
 	else:
@@ -167,17 +170,17 @@ def login(request):
 		request.session['public_key'] = public_key.strip()
 		request.session['privateKey'] = private_key.strip()
 		request.session['address'] = address.strip()
-		return render(request, 'home.html')
+		return redirect('/')
 
 
 def logout(request):
 	request.session['logged_in'] = False
-	return render(request, 'login.html')
+	return redirect('/login/')
 
-
+@csrf_exempt
 def create_campaign(request):
 	if request.method == "POST":
-		if request.session.get('logged_in',False) == False:
+		if not request.session.get('logged_in',False) == False:
 			return render(request, 'login.html')
 		else:
 			secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
@@ -186,7 +189,7 @@ def create_campaign(request):
 			address = arky.core.crypto.getAddress(public_key)
 			private_key = keys['privateKey']
 			encoded_secret = encode(ARK_FUND_SECRET, secret)
-			campaign_info = request.POST['campaign_name'].trim()
+			campaign_name = request.POST['campaign_name'].trim()
 			campaign_info = request.POST['campaign_info'].trim()
 			campaign_goal = request.POST['campaign_goal'].trim()
 			campaign_date = request.POST['campaign_date'].trim()

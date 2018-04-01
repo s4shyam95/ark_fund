@@ -1,7 +1,8 @@
 {% extends "template.html" %}
 {% block main_block %}
 <div class="wrap-login100">
-		<form class="login100-form validate-form" action="/login_check/"> <!-- CHECK -->
+		<form class="login100-form validate-form" method="post" action="/login/"> <!-- CHECK -->
+			{% csrf_token %}
 			<center>
 			<a href="/">
 				<span class="login100-form-logo">

@@ -7,8 +7,7 @@
                 <a class="navbar-bran" href="#"><img style="max-width: 50px;" src='https://ark.io/images/ark-logo.png' /></a>
                 <ul class="navbar-nav mr-auto">
                     <span class="navbar-text">
-                            MWqia1y68vT1oSrRSBC6zEftGRsU29zi3P
-                        {{ request.SESSION.public_key}}
+                        {{ request.session.address}}
                     </span>
                 </ul>
             </div>
@@ -23,7 +22,7 @@
             </div>
             <div class="col-3">
                 <ul class="navbar-nav float-right">
-                    {% if request.SESSION.logged_in %}
+                    {% if request.session.logged_in %}
                     <li>
                         <a class="nav-link" href="/start_campaign/">Start Campaign</a>
                     </li>

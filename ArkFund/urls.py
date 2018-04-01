@@ -22,7 +22,7 @@ urlpatterns = [
     path('', views.home),
     path('login/', views.login),
     path('logout/', views.logout),
-    path('create_campaign/', views.create_campaign),
+    path('start_campaign/', views.create_campaign),
     path('campaign/', views.campaign),
     path('fund/', views.fund),
 ]
