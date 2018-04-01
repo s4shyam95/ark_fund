@@ -234,9 +234,10 @@ def campaign(request):
 	encoded_secret = request.GET['campaign_id']
 	context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
 	secret = decode(ARK_FUND_SECRET, encoded_secret)
-	context_dictionary['funding_completed'] = getBalance(secret)
+	context_dictionary['funding_completed'] = get_balance(secret)
 	investor_list = get_investors(secret)
 	context_dictionary['investors'] = investor_list
+	context_dictionary['per'] = (int(context_dictionary['funding_completed'])*100) // int(context_dictionary['goal'])
 	return render(request, 'campaign.html', context_dictionary)
 
 
