@@ -3,10 +3,8 @@
 <div class="wrap-listing100">
     <div class="row">
         <div class="col-7 side-line">
-                <h2 class="bottom-line make-far">Hello World</h2>
-                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                <h2 class="bottom-line make-far">{{ name }}</h2>
+                <p>{{ description }}
                 </p>
                 <br>
                 <hr>
@@ -30,23 +28,17 @@
         </div>
         <div class="col-5">
             <div class="progress ">
-                <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="50" style="width: 50%; color:#ef192d" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{{ per }}" style="width: {{ per }}%; color:#ef192d" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
-            <p class="text-center bottom-line">$50 of $100 raised</p>
-            <p class="text-center bottom-line">04/01/2018</p>
-            <h5 class="top-10 bottom-line bottom-10">Backers<span class="badge badge-light pull-right">4</span></h5>
+            <p class="text-center bottom-line">{{ funding_completed }} ARK of {{ goal }} ARK raised</p>
+            <p class="text-center bottom-line">{{ created_on }}</p>
+            <h5 class="top-10 bottom-line bottom-10">Backers<span class="badge badge-light pull-right">{{ investors|length }}</span></h5>
+            {% for backer in investors %}
             <div class="backer">
-                <span>MWqia1y68vT1oSrRSBC6zEftGRsU29zi3P</span>
-                <span class="white text-right">$20</span>
+                <span>{{ backer.0 }}</span>
+                <span class="white text-right">{{ backer.1 }}</span>
             </div>
-            <div class="backer">
-                    <span>MWqia1y68vT1oSrRSBC6zEftGRsU29zi3P</span>
-                    <span class="white text-right">$20</span>
-                </div>
-                <div class="backer">
-                        <span>MWqia1y68vT1oSrRSBC6zEftGRsU29zi3P</span>
-                        <span class="white text-right">$20</span>
-                    </div>
+            {% endfor %}
         </div>
     </div>
     
