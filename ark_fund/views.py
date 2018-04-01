@@ -118,7 +118,7 @@ def get_all_campaigns():
 		campaign_set.add(campaign_address)
 		if "vendorField" in txn and re.search('[a-zA-Z]', txn['vendorField']):
 			dict_to_be_appended = get_dictionary_for_encoded_secret(txn['vendorField'])
-			print(dict_to_be_appended)
+			#print(dict_to_be_appended)
 			all_campaigns.append(dict_to_be_appended)
 	skip_entries = 7
 	for i in range(len(all_campaigns)):
@@ -153,11 +153,13 @@ def get_balance(secret):
 
 def get_investors(secret):
 	#get all people who sent money to this address
+	use_transaction_ledger()
 	keys = arky.core.crypto.getKeys(secret)
 	public_key = keys['publicKey']
 	address = arky.core.crypto.getAddress(public_key)
 	transactions = arky.rest.GET.api.transactions(recipientId=address)['transactions']
 	address_value_pair_list = []
+	use_permission_ledger()
 	for tnx in transactions:
 		address_value_pair_list.append((tnx['senderId'],tnx['amount']))
 	return address_value_pair_list
@@ -204,8 +206,8 @@ def logout(request):
 @csrf_exempt
 def create_campaign(request):
 	if request.method == "POST":
-		if not request.session.get('logged_in',False) == False:
-			return render(request, 'login.html')
+		if request.session.get('logged_in',False) == False:
+			return redirect('/login/')
 		else:
 			secret = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
 			keys = arky.core.crypto.getKeys(secret)
@@ -222,10 +224,11 @@ def create_campaign(request):
 			# context_dictionary['encoded_secret'] = encoded_secret
 			insert_key_value_pair(encoded_secret, campaign_name, campaign_info, campaign_goal, campaign_date)
 			context_dict = get_dictionary_for_encoded_secret(encoded_secret)
-			return render(request, 'campaign.html', context_dictionary)
+			return redirect('/campaign/?campaign_id='+encoded_secret)
+			# return render(request, 'campaign.html', context_dictionary)
 	else:
 		if request.session.get('logged_in',False) == False:
-			return render(request, 'login.html')
+			return redirect('/login/')
 		else:
 			return render(request, 'create_campaign.html')
 
@@ -237,7 +240,8 @@ def campaign(request):
 	context_dictionary['funding_completed'] = get_balance(secret)
 	investor_list = get_investors(secret)
 	context_dictionary['investors'] = investor_list
-	context_dictionary['per'] = (int(context_dictionary['funding_completed'])*100) // int(context_dictionary['goal'])
+	# print(context_dictionary)
+	# context_dictionary['per'] = (int(str(context_dictionary['funding_completed']))*100) // int(str(context_dictionary['goal']))
 	return render(request, 'campaign.html', context_dictionary)
 
 
