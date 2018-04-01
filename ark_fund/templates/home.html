@@ -1,4 +1,16 @@
 {% extends 'base.html' %}
+
+{% block alert_block %}
+{% if request.GET.alert %}
+<div class="alert alert-purple alert-dismissible fade show" role="alert" style="height: 54px;">
+		<strong>{{ request.GET.alert }}</strong>.
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		  <span aria-hidden="true">&times;</span>
+		</button>
+	  </div>
+{% endif %}
+{% endblock alert_block %}
+
 {% block main_block %}
 <div class="wrap-listing100">
 	{% for listing in campaigns %}

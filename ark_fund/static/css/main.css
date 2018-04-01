@@ -668,3 +668,10 @@ iframe {
 .white {
   color: white;
 }
+.alert-purple {
+  color: #ddd;
+  background-color: #7579ff;
+  /* border-color: #ffeeba; */
+  border-radius: 3em;
+  width: 800px;
+}

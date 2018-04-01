@@ -36,8 +36,14 @@
             
             {% endblock nav_block %}
 	</div>
+	
 		<div class="container-login100" style="background-repeat: no-repeat;
-        background-attachment: fixed; background-image: url('{% static 'images/bg-01.jpg' %}');">
+		background-attachment: fixed; background-image: url('{% static 'images/bg-01.jpg' %}');">
+		
+		{% block alert_block %}
+            
+		{% endblock alert_block %}
+	
 			{% block main_block %}
             
             {% endblock main_block %}
