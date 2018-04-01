@@ -162,7 +162,7 @@ def get_investors(secret):
 	transactions = arky.rest.GET.api.transactions(recipientId=address)['transactions']
 	address_value_pair_list = []
 	for tnx in transactions:
-		address_value_pair_list.append((tnx['senderId'],tnx['amount']))
+		address_value_pair_list.append((tnx['senderId'],tnx['amount']/10**8))
 	return address_value_pair_list
 	
 
@@ -247,7 +247,7 @@ def campaign(request):
 	context_dictionary['investors'] = investor_list
 	use_permission_ledger()
 	context_dictionary['per'] = ((int(str(context_dictionary['funding_completed']))*100) / (int(str(context_dictionary['goal']))*10**8))
-	print(context_dictionary)
+	# print(context_dictionary)
 	return render(request, 'campaign.html', context_dictionary)
 
 @csrf_exempt
@@ -265,7 +265,7 @@ def fund(request):
 	use_permission_ledger()
 	context_dictionary = {}
 	context_dictionary['alert'] = "Funds have successfully been transfered to our escrow"
-	return render(request, 'home.html', context_dictionary)
+	return redirect('/')
 
 
 # end
