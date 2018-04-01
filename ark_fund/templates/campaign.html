@@ -8,7 +8,8 @@
                 </p>
                 <br>
                 <hr>
-                <form class="login100-form validate-form" method="post" action="/fund/" name="fund_campaign_form"> <!-- CHECK -->
+                {% if request.session.logged_in %}
+                    <form class="login100-form validate-form" method="post" action="/fund/" name="fund_campaign_form"> <!-- CHECK -->
                         <div class="wrap-input100 validate-input" data-validate = "Amount">
                         <input class="crcamp100" type="text" name="amount" placeholder="Amount">
                         </div>
@@ -22,8 +23,8 @@
                             Fund
                         </button>
                     </div>
-           
-             </form>
+                    </form>
+                {% endif %}
 
         </div>
         <div class="col-5">
@@ -33,10 +34,10 @@
             <p class="text-center bottom-line">{{ funding_completed }} ARK of {{ goal }} ARK raised</p>
             <p class="text-center bottom-line">{{ created_on }}</p>
             <h5 class="top-10 bottom-line bottom-10">Backers<span class="badge badge-light pull-right">{{ investors|length }}</span></h5>
-            {% for backer in investors %}
+            {% for backer, pledged_amt in investors.items %}
             <div class="backer">
-                <span>{{ backer.0 }}</span>
-                <span class="white text-right">{{ backer.1 }}</span>
+                <span>{{ backer }}</span>
+                <span class="white text-right">{{ pledged_amt }}</span>
             </div>
             {% endfor %}
         </div>
