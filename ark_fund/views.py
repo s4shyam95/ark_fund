@@ -242,11 +242,11 @@ def campaign(request):
 	secret = decode(ARK_FUND_SECRET, encoded_secret)
 	# print(secret)
 	use_transaction_ledger()
-	context_dictionary['funding_completed'] = get_balance(secret)
+	context_dictionary['funding_completed'] = str(int(get_balance(secret))/10**8)
 	investor_list = get_investors(secret)
 	context_dictionary['investors'] = investor_list
 	use_permission_ledger()
-	context_dictionary['per'] = ((int(str(context_dictionary['funding_completed']))*100) / (int(str(context_dictionary['goal']))*10**8))
+	context_dictionary['per'] = ((float(str(context_dictionary['funding_completed']))*100) / (float(str(context_dictionary['goal']))))
 	# print(context_dictionary)
 	return render(request, 'campaign.html', context_dictionary)
 
@@ -263,9 +263,9 @@ def fund(request):
 	recipient = arky.core.crypto.getAddress(public_key)
 	make_transaction(amount, recipient, secret, "Transaction")
 	use_permission_ledger()
-	context_dictionary = {}
-	context_dictionary['alert'] = "Funds have successfully been transfered to our escrow"
-	return redirect('/')
+	# context_dictionary = {}
+	# context_dictionary['alert'] = "Funds have successfully been transfered to our escrow"
+	return redirect('/?alert=Funds%20have%20successfully%20been%20transfered%20to%20our%20escrow')
 
 
 # end
