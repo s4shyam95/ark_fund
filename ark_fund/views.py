@@ -265,7 +265,7 @@ def fund(request):
 	use_transaction_ledger()
 	secret = request.POST['secret'].strip()
 	amount = request.POST['amount'].strip()
-	amount 
+	amount = float(amount)*10**8
 	encoded_secret = request.POST['encoded_secret'].strip()
 	decoded_secret = decode(ARK_FUND_SECRET, encoded_secret)
 	keys = arky.core.crypto.getKeys(decoded_secret)
