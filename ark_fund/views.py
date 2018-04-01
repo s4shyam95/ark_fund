@@ -120,7 +120,7 @@ def get_all_campaigns():
 			dict_to_be_appended = get_dictionary_for_encoded_secret(txn['vendorField'])
 			#print(dict_to_be_appended)
 			all_campaigns.append(dict_to_be_appended)
-	skip_entries = 7
+	skip_entries = 7+7
 	for i in range(len(all_campaigns)):
 		if "description" in all_campaigns[i]:
 			all_campaigns[i]['description'] = all_campaigns[i]['description'][:256]+" ... "
