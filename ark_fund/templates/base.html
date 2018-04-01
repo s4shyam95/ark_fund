@@ -6,9 +6,11 @@
             <div class="col-3">
                 <a class="navbar-bran" href="/"><img style="max-width: 50px;" src='https://ark.io/images/ark-logo.png' /></a>
                 <ul class="navbar-nav mr-auto">
-                    <span class="navbar-text">
-                        {{ request.session.address}}
-                    </span>
+                    <a href="/account">
+                        <span class="navbar-text">
+                            {{ request.session.address}}
+                        </span>
+                    </a>
                 </ul>
             </div>
             <div class="col-6">

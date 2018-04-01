@@ -620,6 +620,15 @@ iframe {
   color: white;
 }
 
+.balance {
+  background: white;
+  border-radius: 3em;
+  border: 3px white solid;
+  font-size: 25px;
+  font-family: Poppins-Regular;
+  text-align: center;
+}
+
 .progress {
   background: white;
   border-radius: 3em;
