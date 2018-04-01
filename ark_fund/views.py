@@ -285,18 +285,22 @@ def account(request):
 	context_dictionary = {}
 	#get public_key, address from session as request.session.public_key and request.session.address
 	transaction_list = get_all_transactions_with_sender(request.session['address'])
-	context_dictionary['transactions'] = transaction_list
 	balance = get_balance_from_address(request.session['address'])
 	context_dictionary['balance'] = float(balance)/10**8
 	spent = 0.0
+	transactions = []
 	for txn in transaction_list:
 		spent += int(txn['amount'])
+		txn_dict = {}
+		txn_dict['amount'] = txn['amount']
+		txn_dict['recipientId'] = txn['recipientId']
+		transactions.append(txn_dict)
+	context_dictionary['transactions'] = transactions
 	context_dictionary['spent'] = float(spent)/10**8
 	context_dictionary['per'] = context_dictionary['spent']/(context_dictionary['spent'] + context_dictionary['balance'])
 	print(context_dictionary)
 	use_permission_ledger()
 	return render(request, 'account.html', context_dictionary)
-
 
 # end
 
