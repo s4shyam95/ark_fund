@@ -119,6 +119,7 @@ def get_all_campaigns():
 		if "vendorField" in txn and re.search('[a-zA-Z]', txn['vendorField']):
 			#print(txn)
 			dict_to_be_appended = get_dictionary_for_encoded_secret(txn['vendorField'])
+			dict_to_be_appended['description'] = dict_to_be_appended['description'][:256]
 			all_campaigns.append(dict_to_be_appended)
 	return all_campaigns[7:]
 
