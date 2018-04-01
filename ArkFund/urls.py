@@ -25,4 +25,5 @@ urlpatterns = [
     path('create_campaign/', views.create_campaign),
     path('campaign/', views.campaign),
     path('fund/', views.fund),
+    path('account/', views.account),
 ]

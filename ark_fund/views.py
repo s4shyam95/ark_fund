@@ -210,7 +210,7 @@ def logout(request):
 	request.session['logged_in'] = False
 	return redirect('/login/')
 
-@csrf_exempt
+# @csrf_exempt
 def create_campaign(request):
 	if request.method == "POST":
 		if request.session.get('logged_in',False) == False:
@@ -256,9 +256,12 @@ def campaign(request):
 	# print(context_dictionary)
 	return render(request, 'campaign.html', context_dictionary)
 
-@csrf_exempt
+# @csrf_exempt
 def fund(request):
 	# Switch to transaction ledger
+	if request.method == "GET" or request.session.get('logged_in',False) == False:
+			return redirect('/login/')
+
 	use_transaction_ledger()
 	secret = request.POST['secret'].strip()
 	amount = request.POST['amount'].strip()
@@ -272,6 +275,9 @@ def fund(request):
 	# context_dictionary = {}
 	# context_dictionary['alert'] = "Funds have successfully been transfered to our escrow"
 	return redirect('/?alert=Funds%20have%20successfully%20been%20transfered%20to%20our%20escrow')
+
+
+def account()
 
 
 # end
