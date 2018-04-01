@@ -5,10 +5,12 @@ import arky.rest
 import requests
 import random
 import string
+import re
 
 ARK_FUND_SECRET = "not_much_of_a_secret_is_it_now"
 ARK_FUND_CAMPAIGN_INIT_ADDR = "DNGWfoHyhYfmeJNqSPk2xb7BRm1btxyGaP" #Gets updated below.
 TOP_SECRET = "help"
+SKIP_LENGTH = 69
 
 
 # Begin code for encoding with keys (AES is slower but better for this)
@@ -19,7 +21,7 @@ def encode(key, clear):
         key_c = key[i % len(key)]
         enc_c = chr((ord(clear[i]) + ord(key_c)) % 256)
         enc.append(enc_c)
-    return base64.urlsafe_b64encode("".join(enc).encode()).decode()
+    return str(base64.urlsafe_b64encode("".join(enc).encode()).decode())
 
 def decode(key, enc):
     dec = []
@@ -81,10 +83,22 @@ def get_all_transactions():
 	while True:
 		transactions = arky.rest.GET.api.transactions(limit=limit, offset=offset*limit)
 		all_transactions.extend(transactions['transactions'])
-		if transactions['transactions'].size() < limit:
+		if len(transactions['transactions']) < limit:
 			break
 		offset+=1
-	return transactions
+	return sorted(all_transactions, key=lambda k: k['timestamp']) 
+
+def get_all_transactions_with_sender(sender_id):
+	all_transactions = []
+	offset = 0
+	limit = 50
+	while True:
+		transactions = arky.rest.GET.api.transactions(senderId = sender_id, limit=limit, offset=offset*limit)
+		all_transactions.extend(transactions['transactions'])
+		if len(transactions['transactions']) < limit:
+			break
+		offset+=1
+	return sorted(all_transactions, key=lambda k: k['timestamp'])
 
 def make_transaction(amount, recipientId, secret, vendorField):
 	arky.core.sendToken(amount=amount, recipientId=recipientId,secret=secret, vendorField=vendorField)
@@ -92,24 +106,34 @@ def make_transaction(amount, recipientId, secret, vendorField):
 
 def get_all_campaigns():
 	all_campaigns = []
-	transactions = arky.rest.GET.api.transactions(senderId=ARK_FUND_CAMPAIGN_INIT_ADDR)['transactions']
+	transactions = get_all_transactions_with_sender(ARK_FUND_CAMPAIGN_INIT_ADDR)
+	# newlist = sorted(list_to_be_sorted, key=lambda k: k['name']) 
+	# transactions = arky.rest.GET.api.transactions(senderId=ARK_FUND_CAMPAIGN_INIT_ADDR, limit=50, offset=31)['transactions']
 	campaign_set = set()
+	# print(len(transactions))
 	for txn in transactions:
 		campaign_address = txn['recipientId']
 		if campaign_address in campaign_set:
 			continue
 		campaign_set.add(campaign_address)
-		if "vendorField" in txn:
-			all_campaigns.append(get_dictionary_for_encoded_secret(txn['vendorField']))
-	return all_campaigns
+		if "vendorField" in txn and re.search('[a-zA-Z]', txn['vendorField']):
+			dict_to_be_appended = get_dictionary_for_encoded_secret(txn['vendorField'])
+			print(dict_to_be_appended)
+			all_campaigns.append(dict_to_be_appended)
+	skip_entries = 7
+	for i in range(len(all_campaigns)):
+		if "description" in all_campaigns[i]:
+			all_campaigns[i]['description'] = all_campaigns[i]['description'][:256]+" ... "
+
+	return all_campaigns[skip_entries:]
 
 # def seed_campaign(address):
 # 	make_transaction(100000000, address, TOP_SECRET, "SEED")
 
 def init_campaign_with_data(encoded_secret, address, campaign_name, campaign_info, campaign_goal, campaign_date):
 	make_transaction(1, address, TOP_SECRET, encoded_secret)
-	make_transaction(1, address, TOP_SECRET, campaign_name)
-	make_transaction(1, address, TOP_SECRET, campaign_info)
+	# make_transaction(1, address, TOP_SECRET, campaign_name)
+	# make_transaction(1, address, TOP_SECRET, campaign_info)
 	make_transaction(1, address, TOP_SECRET, campaign_goal)
 	make_transaction(1, address, TOP_SECRET, campaign_date)
 
@@ -189,10 +213,10 @@ def create_campaign(request):
 			address = arky.core.crypto.getAddress(public_key)
 			private_key = keys['privateKey']
 			encoded_secret = encode(ARK_FUND_SECRET, secret)
-			campaign_name = request.POST['campaign_name'].trim()
-			campaign_info = request.POST['campaign_info'].trim()
-			campaign_goal = request.POST['campaign_goal'].trim()
-			campaign_date = request.POST['campaign_date'].trim()
+			campaign_name = request.POST['campaign_name'].strip()
+			campaign_info = request.POST['campaign_info'].strip()
+			campaign_goal = request.POST['campaign_goal'].strip()
+			campaign_date = request.POST['campaign_date'].strip()
 			init_campaign_with_data(encoded_secret, address, campaign_name, campaign_info, campaign_goal, campaign_date)
 			context_dictionary = {}
 			# context_dictionary['encoded_secret'] = encoded_secret
@@ -210,18 +234,19 @@ def campaign(request):
 	encoded_secret = request.GET['campaign_id']
 	context_dictionary = get_dictionary_for_encoded_secret(encoded_secret)
 	secret = decode(ARK_FUND_SECRET, encoded_secret)
-	context_dictionary['funding_completed'] = getBalance(secret)
+	context_dictionary['funding_completed'] = get_balance(secret)
 	investor_list = get_investors(secret)
 	context_dictionary['investors'] = investor_list
+	context_dictionary['per'] = (int(context_dictionary['funding_completed'])*100) // int(context_dictionary['goal'])
 	return render(request, 'campaign.html', context_dictionary)
 
 
 def fund(request):
 	# Switch to transaction ledger
 	use_transaction_ledger()
-	secret = request.POST['secret'].trim()
-	amount = request.POST['amount'].trim()
-	recipient = request.POST['recipient'].trim()
+	secret = request.POST['secret'].strip()
+	amount = request.POST['amount'].strip()
+	recipient = request.POST['recipient'].strip()
 	make_transaction(amount, recipient, secret, "Transaction")
 	use_permission_ledger()
 	context_dictionary = {}
