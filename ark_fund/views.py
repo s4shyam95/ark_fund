@@ -308,3 +308,41 @@ def account(request):
 # end
 
 
+# Token Management
+
+def mature_campaigns(encoded_secret):
+	if check_maturity(encoded_secret) > 0:
+		release_tokens()
+		release_key()
+		return True
+	elif check_maturity(encoded_secret) < 0:
+		revert_funds()
+		return True
+	else:
+		return False
+
+
+def release_key(encoded_secret, owner_public_key):
+	secret = decode(ARK_FUND_SECRET, encoded_secret)
+	encrypted_secret = ellipical_curve_encrypt(secret, owner_public_key)
+	make_transaction(1, ARK_FUND_CAMPAIGN_INIT_ADDR, secret, encoded_secret)
+	
+
+def release_tokens(encoded_secret):
+	#release token from campaign_id to users in transaction
+	investors = get_investors(encoded_secret)
+	use_permission_ledger()
+	for investor in investors:
+		make_transaction(investor[1], investors[0], secret, "token")
+	
+
+
+def revert_funds():
+	investors = get_investors(encoded_secret)
+	use_transaction_ledger()
+	for investor in investors:
+		make_transaction(investor[1], investors[0], secret, "refund")
+
+# end
+
+
